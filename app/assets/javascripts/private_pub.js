@@ -45,6 +45,9 @@ function buildPrivatePub(doc) {
     },
 
     sign: function(options) {
+      var sub = self.subscription(options.channel)
+      if(sub) return
+
       if (!self.subscriptions.server) {
         self.subscriptions.server = options.server;
       }
