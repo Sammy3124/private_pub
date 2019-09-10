@@ -2,6 +2,7 @@ function buildPrivatePub(doc) {
   var self = {
     connecting: false,
     fayeClient: null,
+    fayeUser: null,
     fayeCallbacks: [],
     subscriptions: {},
     subscriptionObjects: {},
@@ -33,6 +34,20 @@ function buildPrivatePub(doc) {
 
     fayeExtension: {
       outgoing: function(message, callback) {
+        if (message.channel == "/meta/connect") {
+          if(self.fayeUser) {
+            if (!message.ext) message.ext = {};
+            message.ext.user = self.fayeUser;
+          }
+        }
+
+        if (message.channel == "/meta/disconnect") {
+          if(self.fayeUser) {
+            if (!message.ext) message.ext = {};
+            message.ext.user = self.fayeUser;
+          }
+        }
+
         if (message.channel == "/meta/subscribe") {
           // Attach the signature and timestamp to subscription messages
           var subscription = self.subscriptions[message.subscription];
@@ -51,7 +66,10 @@ function buildPrivatePub(doc) {
       if (!self.subscriptions.server) {
         self.subscriptions.server = options.server;
       }
+
       self.subscriptions[options.channel] = options;
+      self.fayeUser = options.user;
+
       self.faye(function(faye) {
         var sub = faye.subscribe(options.channel, self.handleResponse);
         self.subscriptionObjects[options.channel] = sub;
